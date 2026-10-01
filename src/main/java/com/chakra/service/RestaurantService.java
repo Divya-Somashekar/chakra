@@ -1,6 +1,9 @@
 package com.chakra.service;
 
 import com.chakra.domain.Restaurant;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,7 @@ public class RestaurantService {
                 "restaurants",
                 new RedisGeoCommands.GeoLocation<>(
                         restaurant.getName(),
-                        new org.springframework.data.geo.Point(
+                        new Point(
                                 restaurant.getLongitude(),
                                 restaurant.getLatitude()
                         )
@@ -36,9 +39,9 @@ public class RestaurantService {
         return redisTemplate.opsForGeo()
                 .radius(
                         "restaurants",
-                        new org.springframework.data.geo.Circle(
-                                new org.springframework.data.geo.Point(lon, lat),
-                                new org.springframework.data.geo.Distance(radiusKm, org.springframework.data.geo.Metrics.KILOMETERS)
+                        new Circle(
+                                new Point(lon, lat),
+                                new Distance(radiusKm, org.springframework.data.geo.Metrics.KILOMETERS)
                         )
                 )
                 .getContent()
