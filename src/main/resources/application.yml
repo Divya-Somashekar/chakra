@@ -3,5 +3,29 @@ spring:
     name: "chakra"
   data:
     redis:
+      # Local default. In Kubernetes SPRING_DATA_REDIS_HOST overrides it via relaxed binding;
+      # locally spring-boot-docker-compose points it at the container in compose.yaml.
       host: "localhost"
       port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      # Boot enables these automatically when it detects Kubernetes, but being explicit means
+      # /actuator/health/liveness and /readiness also work locally, so the probes are testable.
+      probes:
+        enabled: true
+      group:
+        # Readiness includes Redis: chakra cannot serve without it, so a pod that has lost Redis
+        # should be pulled out of the Service rather than returning errors.
+        readiness:
+          include: readinessState,redis
+        # Liveness deliberately does NOT include Redis — a Redis outage must not get every pod
+        # killed and restarted in a loop.
+        liveness:
+          include: livenessState
